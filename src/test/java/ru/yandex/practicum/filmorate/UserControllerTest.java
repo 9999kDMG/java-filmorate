@@ -28,7 +28,7 @@ public class UserControllerTest {
     }
 
     @ParameterizedTest(name = "{index}. Проверка невалидности id \"{arguments}\"")
-    @ValueSource(ints = {-1, 0})
+    @ValueSource(ints = {-1, Integer.MIN_VALUE})
     @DisplayName("Проверка невалидности id")
     void createIdRequestTest(int value) {
         User user = User.builder()
