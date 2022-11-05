@@ -14,7 +14,7 @@ import static ru.yandex.practicum.filmorate.utils.ValidatorTest.userHasErrorMess
 public class FilmControllerTest {
 
     @ParameterizedTest(name = "{index}. Проверка невалидности id \"{arguments}\"")
-    @ValueSource(ints = {-1, 0})
+    @ValueSource(ints = {-1, Integer.MIN_VALUE})
     @DisplayName("Проверка невалидности id")
     void createIdRequestTest(int value) {
         Film film = Film.builder()

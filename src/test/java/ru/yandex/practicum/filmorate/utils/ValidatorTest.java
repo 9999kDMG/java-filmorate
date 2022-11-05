@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.utils;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
-import javax.validation.constraints.NotNull;
 import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 public class ValidatorTest {

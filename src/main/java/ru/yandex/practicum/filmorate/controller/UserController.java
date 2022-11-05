@@ -17,6 +17,7 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
+    private int id;
 
     @GetMapping
     public List<User> getUser() {
@@ -24,17 +25,25 @@ public class UserController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User postUser(@Valid @RequestBody User user) {
         log.info("Create User" + user);
-        validateUserId(user.getId());
-        checkUserName(user);
-        users.put(user.getId(), user);
-        return user;
+        checkUserLogin(user);
+        String newName;
+        if (user.getName() == null || user.getName().isBlank()) {
+            newName = user.getLogin();
+        } else {
+            newName = user.getName();
+        }
+        User newUser = user.withId(getNextId()).withName(newName);
+        users.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     @PutMapping
     public User putUser(@Valid @RequestBody User user) {
         log.info("Update User" + user);
+        checkUserLogin(user);
         if (!users.containsKey(user.getId())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
@@ -42,15 +51,13 @@ public class UserController {
         return user;
     }
 
-    public void checkUserName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
+    public void checkUserLogin(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
-    public void validateUserId(int id) {
-        if (!users.containsKey(id)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+    private int getNextId() {
+        return ++id;
     }
 }

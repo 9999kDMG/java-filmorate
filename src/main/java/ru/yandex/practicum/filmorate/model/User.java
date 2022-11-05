@@ -1,19 +1,21 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 
-@Data
+@With
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class User {
 
-    @Positive(message = "id должен быть положительным")
+    @PositiveOrZero(message = "id должен быть положительным")
     int id;
 
     @Email(message = "email должен быть действительным")

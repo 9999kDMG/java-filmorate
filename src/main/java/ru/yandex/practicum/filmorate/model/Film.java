@@ -1,19 +1,18 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
-@Data
+@With
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Film {
 
-    @Positive(message = "id должен быть положительным")
+    @PositiveOrZero(message = "id должен быть положительным")
     int id;
 
     @NotBlank(message = "название не должно состоять из пробелов или быть пустым")

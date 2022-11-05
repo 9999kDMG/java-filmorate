@@ -19,18 +19,21 @@ import java.util.Map;
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
 
+    private int id;
+
     @GetMapping
     public List<Film> getFilm() {
         return new ArrayList<>(films.values());
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Film postFilm(@Valid @RequestBody Film film) {
         log.info("Create Film" + film);
         validateFilmRelease(film.getReleaseDate());
-        validateFilmId(film.getId());
-        films.put(film.getId(), film);
-        return film;
+        Film newFilm = film.withId(getNextId());
+        films.put(newFilm.getId(), newFilm);
+        return newFilm;
     }
 
     @PutMapping
@@ -50,11 +53,7 @@ public class FilmController {
         }
     }
 
-    public void validateFilmId(int id) {
-        if (!films.containsKey(id)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        }
+    private int getNextId() {
+        return ++id;
     }
-
-
 }
