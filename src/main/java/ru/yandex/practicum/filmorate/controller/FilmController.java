@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.ValidateFilmException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
@@ -29,8 +29,8 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film postFilm(@Valid @RequestBody Film film) {
-        log.info("Create Film" + film);
-        validateFilmRelease(film.getReleaseDate());
+        log.info("Create Film {}", film);
+        throwIfFilmReleaseIncorrect(film.getReleaseDate());
         Film newFilm = film.withId(getNextId());
         films.put(newFilm.getId(), newFilm);
         return newFilm;
@@ -38,18 +38,18 @@ public class FilmController {
 
     @PutMapping
     public Film putFilm(@Valid @RequestBody Film film) {
-        log.info("Update Film" + film);
-        validateFilmRelease(film.getReleaseDate());
+        log.info("Update Film {}", film);
+        throwIfFilmReleaseIncorrect(film.getReleaseDate());
         if (!films.containsKey(film.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new ValidateFilmException("NOT_FOUND");
         }
         films.put(film.getId(), film);
         return film;
     }
 
-    public void validateFilmRelease(LocalDate date) {
+    public void throwIfFilmReleaseIncorrect(LocalDate date) {
         if (date.isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ValidateFilmException("Фильм не может иметь дату релиза раньше изобретения кино");
         }
     }
 

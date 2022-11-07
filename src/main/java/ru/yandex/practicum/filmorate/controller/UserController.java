@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.exception.ValidateUserException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
@@ -27,8 +27,8 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User postUser(@Valid @RequestBody User user) {
-        log.info("Create User" + user);
-        checkUserLogin(user);
+        log.info("Create User {}", user);
+        throwIfLoginIncorrect(user);
         String newName;
         if (user.getName() == null || user.getName().isBlank()) {
             newName = user.getLogin();
@@ -42,18 +42,18 @@ public class UserController {
 
     @PutMapping
     public User putUser(@Valid @RequestBody User user) {
-        log.info("Update User" + user);
-        checkUserLogin(user);
+        log.info("Update User {}", user);
+        throwIfLoginIncorrect(user);
         if (!users.containsKey(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            throw new ValidateUserException("NOT_FOUND");
         }
         users.put(user.getId(), user);
         return user;
     }
 
-    public void checkUserLogin(User user) {
+    public void throwIfLoginIncorrect(User user) {
         if (user.getLogin().contains(" ")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ValidateUserException("Login не должен содержать пробелы");
         }
     }
 
