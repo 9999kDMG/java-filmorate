@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidateUserException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
@@ -45,7 +46,7 @@ public class UserController {
         log.info("Update User {}", user);
         throwIfLoginIncorrect(user);
         if (!users.containsKey(user.getId())) {
-            throw new ValidateUserException("NOT_FOUND");
+            throw new NotFoundException("NOT_FOUND");
         }
         users.put(user.getId(), user);
         return user;
@@ -53,7 +54,7 @@ public class UserController {
 
     public void throwIfLoginIncorrect(User user) {
         if (user.getLogin().contains(" ")) {
-            throw new ValidateUserException("Login не должен содержать пробелы");
+            throw new BadRequestException("BAD_REQUEST");
         }
     }
 

@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidateFilmException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
@@ -41,7 +42,7 @@ public class FilmController {
         log.info("Update Film {}", film);
         throwIfFilmReleaseIncorrect(film.getReleaseDate());
         if (!films.containsKey(film.getId())) {
-            throw new ValidateFilmException("NOT_FOUND");
+            throw new NotFoundException("NOT_FOUND");
         }
         films.put(film.getId(), film);
         return film;
@@ -49,7 +50,7 @@ public class FilmController {
 
     public void throwIfFilmReleaseIncorrect(LocalDate date) {
         if (date.isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidateFilmException("Фильм не может иметь дату релиза раньше изобретения кино");
+            throw new BadRequestException("BAD_REQUEST");
         }
     }
 
