@@ -4,6 +4,8 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @With
 @Getter
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Film {
+    final Set<Integer> filmLikes = new HashSet<>();
 
     @PositiveOrZero(message = "id должен быть положительным")
     int id;
@@ -27,4 +30,12 @@ public class Film {
 
     @Positive(message = "продолжительность должна быть положительной")
     int duration;
+
+    public void addFilmLike(int userId) {
+        filmLikes.add(userId);
+    }
+
+    public void deleteLike(int userId) {
+        filmLikes.remove(userId);
+    }
 }
