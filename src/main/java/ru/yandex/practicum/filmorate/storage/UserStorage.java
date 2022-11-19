@@ -5,15 +5,15 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.List;
 
 public interface UserStorage {
-    public int getNextId();
+    int getNextId();
 
-    public User getUser(int id);
+    User getUser(int id);
 
-    public List<User> getAll();
+    List<User> getAll();
 
-    public User putUser(User user);
+    User putUser(User user);
 
-    public User putUser(int id, User user);
+    User putUser(int id, User user);
 
-    public boolean isUserInStorage(int userId);
+    void isExist(int userId);
 }

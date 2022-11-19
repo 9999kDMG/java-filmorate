@@ -32,14 +32,14 @@ public class UserController {
     public User postUser(@Valid @RequestBody User user) {
         log.info("Create User {}", user);
         throwIfLoginIncorrect(user);
-        return userService.postUser(user);
+        return userService.createUser(user);
     }
 
     @PutMapping
     public User putUser(@Valid @RequestBody User user) {
         log.info("Update User {}", user);
         throwIfLoginIncorrect(user);
-        return userService.putUser(user);
+        return userService.updateUser(user);
     }
 
     @GetMapping("/{id}")

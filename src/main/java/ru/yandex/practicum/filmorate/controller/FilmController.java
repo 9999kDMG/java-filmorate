@@ -39,14 +39,14 @@ public class FilmController {
     public Film postFilm(@Valid @RequestBody Film film) {
         log.info("Create Film {}", film);
         throwIfFilmReleaseIncorrect(film.getReleaseDate());
-        return filmService.postFilm(film);
+        return filmService.createFilm(film);
     }
 
     @PutMapping
     public Film putFilm(@Valid @RequestBody Film film) {
         log.info("Update Film {}", film);
         throwIfFilmReleaseIncorrect(film.getReleaseDate());
-        return filmService.putFilm(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/{id}/like/{userId}")
