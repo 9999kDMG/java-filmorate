@@ -7,6 +7,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @With
 @Getter
@@ -14,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class User {
+    final Set<Integer> friends = new HashSet<>();
 
     @PositiveOrZero(message = "id должен быть положительным")
     int id;
@@ -28,4 +31,12 @@ public class User {
 
     @PastOrPresent(message = "дата рождения не может быть в будущем")
     LocalDate birthday;
+
+    public void addFriend(int friendId) {
+        friends.add(friendId);
+    }
+
+    public void deleteFriend(int friendId) {
+        friends.remove(friendId);
+    }
 }
