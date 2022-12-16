@@ -3,8 +3,8 @@ CREATE TABLE IF NOT EXISTS USERS
     USER_ID  INTEGER auto_increment
         primary key,
     EMAIL    CHARACTER VARYING     not null,
-    LOGIN    CHARACTER VARYING(15) not null,
-    NAME     CHARACTER VARYING(15) not null,
+    LOGIN    CHARACTER VARYING(50) not null,
+    NAME     CHARACTER VARYING(50) not null,
     BIRTHDAY DATE                  not null
 );
 CREATE TABLE IF NOT EXISTS FRIENDSHIP
@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS FILM
 );
 CREATE TABLE IF NOT EXISTS LIKES
 (
-    USER_ID INTEGER not null,
     FILM_ID INTEGER not null,
+    USER_ID INTEGER not null,
     constraint LIKES_FILM_FILM_ID_FK
         foreign key (FILM_ID) references FILM
             on delete cascade,

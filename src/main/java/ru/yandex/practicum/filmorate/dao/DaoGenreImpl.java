@@ -39,8 +39,8 @@ public class DaoGenreImpl implements DaoGenre {
     @Override
     public List<Optional<Genre>> getAllByIdFilm(int filmId) {
         String sqlQuery = "SELECT FG.GENRE_ID AS genre_id, G.NAME AS name " +
-                "FROM FILM_GENRES FG, GENRE G " +
-                "WHERE FG.FILM_ID = ? AND FG.GENRE_ID = G.GENRE_ID";
+                "FROM FILM_GENRES AS FG JOIN GENRE AS G ON FG.GENRE_ID = G.GENRE_ID " +
+                "WHERE FG.FILM_ID = ?";
         try {
             return jdbcTemplate.query(sqlQuery, this::mapRowToGenre, filmId);
         } catch (DataAccessException exception) {

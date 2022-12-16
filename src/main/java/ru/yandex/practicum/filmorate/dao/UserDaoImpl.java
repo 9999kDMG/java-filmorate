@@ -91,16 +91,17 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public List<Optional<User>> getFriends(int id) {
-        String sqlQuery = "SELECT U.USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY" +
-                " FROM USERS U, FRIENDSHIP F WHERE U.USER_ID = ? AND F.USER_ID = U.USER_ID";
+        String sqlQuery = "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.NAME, U.BIRTHDAY " +
+                "FROM FRIENDSHIP F, USERS U WHERE F.USER_ID = ? AND U.USER_ID = F.FRIEND_ID";
+
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id);
     }
 
     @Override
     public List<Optional<User>> getMutualFriends(int id, int otherId) {
-        String sqlQuery = "SELECT U.USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY" +
-                " FROM USERS U, FRIENDSHIP F1, FRIENDSHIP F2" +
-                " WHERE F1.USER_ID = ? AND F2.USER_ID = ? AND F1.USER_ID = U.USER_ID AND F1.FRIEND_ID = F2.FRIEND_ID";
+        String sqlQuery = "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.NAME, U.BIRTHDAY " +
+                "FROM FRIENDSHIP AS F JOIN USERS AS U ON U.USER_ID = F.FRIEND_ID WHERE F.USER_ID = ? AND F.FRIEND_ID " +
+                "IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 

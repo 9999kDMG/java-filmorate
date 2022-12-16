@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -12,12 +15,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class Film {
     private List<Genre> genres;
 
     private Mpa mpa;
 
-    @PositiveOrZero(message = "id должен быть положительным")
     private int id;
 
     @NotBlank(message = "название не должно состоять из пробелов или быть пустым")

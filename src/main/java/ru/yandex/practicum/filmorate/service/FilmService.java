@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dao.MpaDao;
 import ru.yandex.practicum.filmorate.dao.UserDao;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,13 +50,13 @@ public class FilmService {
     }
 
     private void throwIfNFMpaOrGenre(Film film) {
-        Mpa mpa = mpaDao.getById(film.getMpa().getId())
+        mpaDao.getById(film.getMpa().getId())
                 .orElseThrow(() -> new NotFoundException(String.format("mpa id%s", film.getMpa().getId())));
-        film.getGenres().forEach(genre -> {
-            if (daoGenre.getById(genre.getId()).isEmpty()) {
-                throw new NotFoundException(String.format("genre id%s", genre.getId()));
-            }
-        });
+//        film.getGenres().forEach(genre -> {
+//            if (daoGenre.getById(genre.getId()).isEmpty()) {
+//                throw new NotFoundException(String.format("genre id%s", genre.getId()));
+//            }
+//        });
     }
 
     public void addLike(int filmId, int userId) {

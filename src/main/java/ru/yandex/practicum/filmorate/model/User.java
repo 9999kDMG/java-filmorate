@@ -5,7 +5,6 @@ import lombok.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
-import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 
 @With
@@ -13,9 +12,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class User {
 
-    @PositiveOrZero(message = "id должен быть положительным")
     private int id;
 
     @NotBlank(message = "login не должен состоять из пробелов или быть пустым")

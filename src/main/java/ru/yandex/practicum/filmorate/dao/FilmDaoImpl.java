@@ -2,12 +2,15 @@ package ru.yandex.practicum.filmorate.dao;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -56,6 +59,7 @@ public class FilmDaoImpl implements FilmDao {
         filmMap.put("mpa_id", film.getMpa().getId());
 
         int filmId = simpleJdbcInsert.executeAndReturnKey(filmMap).intValue();
+        updateFilmGenres(film.getGenres(), filmId);
         return getFilm(filmId);
     }
 
@@ -70,6 +74,8 @@ public class FilmDaoImpl implements FilmDao {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
+        jdbcTemplate.update("DELETE FROM FILM_GENRES WHERE FILM_ID = ?", film.getId());
+        updateFilmGenres(film.getGenres(), film.getId());
         return getFilm(film.getId());
     }
 
@@ -87,16 +93,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Optional<Film>> getMostPopularFilms(int limitSize) {
-        String sqlQuery = "SELECT " +
-                "F.FILM_ID, " +
-                "F.NAME, " +
-                "F.DESCRIPTION, " +
-                "F.RELEASE_DATE, " +
-                "F.DURATION, " +
-                "M.MPA_ID AS mpa_id, " +
-                "M.NAME AS mpa_name, " +
-                "G.GENRE_ID, " +
-                "G.NAME AS genre_name, " +
+        String sqlQuery = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, M.MPA_ID AS mpa_id, " +
+                "M.NAME AS mpa_name, G.GENRE_ID, G.NAME AS genre_name, " +
                 "COUNT(L.FILM_ID) AS likes " +
                 "FROM FILM AS F " +
                 "INNER JOIN MPA M ON F.MPA_ID = M.MPA_ID " +
@@ -120,5 +118,31 @@ public class FilmDaoImpl implements FilmDao {
                 .genres(daoGenre.getAllByIdFilm(resultSet.getInt("film_id"))
                         .stream().flatMap(Optional::stream).collect(Collectors.toList()))
                 .build());
+    }
+
+    private void updateFilmGenres(List<Genre> genres, int filmId) {
+        if (genres == null) {
+            return;
+        }
+
+        List<Integer> genreUniqueIds = genres.stream()
+                .map(Genre::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        String sqlQuery = "INSERT INTO FILM_GENRES VALUES(?, ?)";
+        jdbcTemplate.batchUpdate(
+                sqlQuery,
+                new BatchPreparedStatementSetter() {
+                    public void setValues(PreparedStatement ps, int i) throws SQLException {
+                        int genreId = genreUniqueIds.get(i);
+                        ps.setInt(1, filmId);
+                        ps.setInt(2, genreId);
+                    }
+
+                    public int getBatchSize() {
+                        return genreUniqueIds.size();
+                    }
+                });
     }
 }
