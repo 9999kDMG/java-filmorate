@@ -27,20 +27,6 @@ public class UserControllerTest {
         Assertions.assertTrue(userHasErrorMessage(user, "email должен быть действительным"));
     }
 
-    @ParameterizedTest(name = "{index}. Проверка невалидности id \"{arguments}\"")
-    @ValueSource(ints = {-1, Integer.MIN_VALUE})
-    @DisplayName("Проверка невалидности id")
-    void createIdRequestTest(int value) {
-        User user = User.builder()
-                .id(value)
-                .email("test@yandex.ru")
-                .login("login")
-                .name("name")
-                .birthday(LocalDate.of(2000, 1, 1))
-                .build();
-        Assertions.assertTrue(userHasErrorMessage(user, "id должен быть положительным"));
-    }
-
     @ParameterizedTest(name = "{index}. Проверка невалидности login \"{arguments}\"")
     @ValueSource(strings = {" ", "    ", ""})
     @DisplayName("Проверка невалидности login")
