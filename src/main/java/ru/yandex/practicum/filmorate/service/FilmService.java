@@ -1,63 +1,79 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.DaoGenre;
+import ru.yandex.practicum.filmorate.dao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.MpaDao;
+import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmDao filmDao;
+    private final UserDao userDao;
+    private final MpaDao mpaDao;
+    private final DaoGenre daoGenre;
 
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+    public FilmService(FilmDao filmDao, UserDao userDao, MpaDao mpaDao, DaoGenre daoGenre) {
+        this.filmDao = filmDao;
+        this.userDao = userDao;
+        this.mpaDao = mpaDao;
+        this.daoGenre = daoGenre;
     }
 
     public Film getFilmById(int filmId) {
-        filmStorage.isExist(filmId);
-        return filmStorage.getFilm(filmId);
+        return filmDao.getFilm(filmId).orElseThrow(() -> new NotFoundException(String.format("film id%s", filmId)));
     }
 
     public List<Film> getAll() {
-        return filmStorage.getAll();
+        List<Optional<Film>> optFilm = filmDao.getAll();
+        return optFilm.stream().flatMap(Optional::stream).collect(Collectors.toList());
     }
 
     public Film createFilm(Film film) {
-        Film newFilm = film.withId(filmStorage.getNextId());
-        return filmStorage.putFilm(newFilm);
+        throwIfNFMpaOrGenre(film);
+        return filmDao.createFilm(film)
+                .orElseThrow(() -> new NotFoundException(String.format("film id%s", film.getId())));
     }
 
     public Film updateFilm(Film film) {
-        filmStorage.isExist(film.getId());
-        return filmStorage.putFilm(film);
+        getFilmById(film.getId());
+        throwIfNFMpaOrGenre(film);
+        return filmDao.updateFilm(film)
+                .orElseThrow(() -> new NotFoundException(String.format("film id%s", film.getId())));
+
     }
 
-    public Film addLike(int filmId, int userId) {
-        filmStorage.isExist(filmId);
-        userStorage.isExist(userId);
-        Film newFilm = filmStorage.getFilm(filmId);
-        newFilm.addFilmLike(userId);
-        return filmStorage.putFilm(newFilm);
+    private void throwIfNFMpaOrGenre(Film film) {
+        Mpa mpa = mpaDao.getById(film.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException(String.format("mpa id%s", film.getMpa().getId())));
+        film.getGenres().forEach(genre -> {
+            if (daoGenre.getById(genre.getId()).isEmpty()) {
+                throw new NotFoundException(String.format("genre id%s", genre.getId()));
+            }
+        });
     }
 
-    public Film deleteLike(int filmId, int userId) {
-        filmStorage.isExist(filmId);
-        userStorage.isExist(userId);
-        Film newFilm = filmStorage.getFilm(filmId);
-        newFilm.deleteLike(userId);
-        return filmStorage.putFilm(newFilm);
+    public void addLike(int filmId, int userId) {
+        getFilmById(filmId);
+        userDao.getUser(userId).orElseThrow(() -> new NotFoundException(String.format("user id%s", userId)));
+        filmDao.addLike(filmId, userId);
+    }
+
+    public void deleteLike(int filmId, int userId) {
+        getFilmById(filmId);
+        userDao.getUser(userId).orElseThrow(() -> new NotFoundException(String.format("user id%s", userId)));
+        filmDao.deleteLike(filmId, userId);
     }
 
     public List<Film> getMostPopularFilms(int limitSize) {
-        return filmStorage.getAll().stream().sorted((a, b) ->
-                b.getFilmLikes().size() - a.getFilmLikes().size()
-        ).limit(limitSize).collect(Collectors.toList());
+        List<Optional<Film>> optFilm = filmDao.getMostPopularFilms(limitSize);
+        return optFilm.stream().flatMap(Optional::stream).collect(Collectors.toList());
     }
 }

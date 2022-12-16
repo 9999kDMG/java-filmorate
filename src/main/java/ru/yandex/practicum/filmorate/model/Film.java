@@ -4,38 +4,32 @@ import lombok.*;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @With
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Film {
-    final Set<Integer> filmLikes = new HashSet<>();
+    private List<Genre> genres;
+
+    private Mpa mpa;
 
     @PositiveOrZero(message = "id должен быть положительным")
-    int id;
+    private int id;
 
     @NotBlank(message = "название не должно состоять из пробелов или быть пустым")
-    String name;
+    private String name;
 
     @NotBlank(message = "описание не должно состоять из пробелов или быть пустым")
     @Size(max = 200, message = "описание не должно превишать 200 символов")
-    String description;
+    private String description;
 
     @PastOrPresent(message = "дата выхода фильма не должна быть в будущем")
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
     @Positive(message = "продолжительность должна быть положительной")
-    int duration;
-
-    public void addFilmLike(int userId) {
-        filmLikes.add(userId);
-    }
-
-    public void deleteLike(int userId) {
-        filmLikes.remove(userId);
-    }
+    private int duration;
 }

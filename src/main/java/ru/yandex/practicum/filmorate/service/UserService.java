@@ -2,24 +2,26 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.UserDao;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class UserService {
-    private final UserStorage userStorage;
+    private final UserDao userDao;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public UserService(UserDao userDao) {
+        this.userDao = userDao;
     }
 
     public List<User> getAll() {
-        return userStorage.getAll();
+        List<Optional<User>> optUser = userDao.getAll();
+        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
     }
 
     public User createUser(User user) {
@@ -29,67 +31,50 @@ public class UserService {
         } else {
             newName = user.getName();
         }
-        User newUser = user.withId(userStorage.getNextId()).withName(newName);
-        return userStorage.putUser(newUser);
+        User newUser = user.withName(newName);
+        return userDao.createUser(newUser)
+                .orElseThrow(() -> new NotFoundException(String.format("user id%s", user.getId())));
     }
 
     public User updateUser(User user) {
-        userStorage.isExist(user.getId());
-        return userStorage.putUser(user);
+        return userDao.updateUser(user)
+                .orElseThrow(() -> new NotFoundException(String.format("user id%s", user.getId())));
     }
 
     public User getUserById(int id) {
-        userStorage.isExist(id);
-        return userStorage.getUser(id);
+        return userDao.getUser(id).orElseThrow(() -> new NotFoundException(String.format("user id%s", id)));
     }
 
-    public User addUserFriend(int id, int friendId) {
-        userStorage.isExist(id);
-        userStorage.isExist(friendId);
-        User newUser = userStorage.getUser(id);
-        newUser.addFriend(friendId);
+    public void addUserFriend(int id, int friendId) {
+        getUserById(id);
+        getUserById(friendId);
 
-        User newFriend = userStorage.getUser(friendId);
-        newFriend.addFriend(id);
-        userStorage.putUser(friendId, newFriend);
-
-        return userStorage.putUser(id, newUser);
+        userDao.addFriend(id, friendId);
     }
 
-    public User deleteUserFriend(int id, int friendId) {
-        userStorage.isExist(id);
-        userStorage.isExist(friendId);
-        User newUser = userStorage.getUser(id);
-        newUser.deleteFriend(friendId);
+    public void deleteUserFriend(int id, int friendId) {
+        getUserById(id);
+        getUserById(friendId);
 
-        User newFriend = userStorage.getUser(friendId);
-        newFriend.deleteFriend(id);
-        userStorage.putUser(friendId, newFriend);
-
-        return userStorage.putUser(id, newUser);
+        userDao.deleteFriend(id, friendId);
     }
 
     public List<User> getFriendsList(int id) {
-        userStorage.isExist(id);
-        List<Integer> friends = new ArrayList<>(userStorage.getUser(id).getFriends());
-        List<User> friendsList = new ArrayList<>();
-        for (int userId : friends) {
-            friendsList.add(userStorage.getUser(userId));
-        }
-        return friendsList;
+        getUserById(id);
+        List<Optional<User>> optUser = userDao.getFriends(id);
+        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
     }
 
     public List<User> getMutualFriends(int id, int otherId) {
-        userStorage.isExist(id);
-        userStorage.isExist(otherId);
-        List<Integer> friendsOfFirstUser = new ArrayList<>(userStorage.getUser(id).getFriends());
-        List<Integer> friendsOfSecondUser = new ArrayList<>(userStorage.getUser(otherId).getFriends());
-        List<Integer> mutualFriendsId = friendsOfFirstUser
-                .stream().filter(friendsOfSecondUser::contains).collect(Collectors.toList());
-        List<User> mutualFriends = new ArrayList<>();
-        for (int userId : mutualFriendsId) {
-            mutualFriends.add(userStorage.getUser(userId));
-        }
-        return mutualFriends;
+        getUserById(id);
+        getUserById(otherId);
+
+        List<Optional<User>> optUser = userDao.getMutualFriends(id, otherId);
+        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
+    }
+
+    public void deleteUser(int id) {
+        getUserById(id);
+        userDao.deleteUser(id);
     }
 }

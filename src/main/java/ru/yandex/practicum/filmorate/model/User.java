@@ -7,8 +7,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @With
 @Getter
@@ -16,27 +14,18 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class User {
-    final Set<Integer> friends = new HashSet<>();
 
     @PositiveOrZero(message = "id должен быть положительным")
-    int id;
-
-    @Email(message = "email должен быть действительным")
-    String email;
+    private int id;
 
     @NotBlank(message = "login не должен состоять из пробелов или быть пустым")
-    String login;
+    private String login;
 
-    String name;
+    @Email(message = "email должен быть действительным")
+    private String email;
+
+    private String name;
 
     @PastOrPresent(message = "дата рождения не может быть в будущем")
-    LocalDate birthday;
-
-    public void addFriend(int friendId) {
-        friends.add(friendId);
-    }
-
-    public void deleteFriend(int friendId) {
-        friends.remove(friendId);
-    }
+    private LocalDate birthday;
 }

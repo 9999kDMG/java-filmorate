@@ -50,15 +50,15 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Add like to Film id {} from User id {}", id, userId);
-        return filmService.addLike(id, userId);
+        filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable int id, @PathVariable int userId) {
+    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
         log.info("Delete like to Film id {} from User id {}", id, userId);
-        return filmService.deleteLike(id, userId);
+        filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")
@@ -67,7 +67,7 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
-    public void throwIfFilmReleaseIncorrect(LocalDate date) {
+    private void throwIfFilmReleaseIncorrect(LocalDate date) {
         if (date.isBefore(LocalDate.of(1895, 12, 28))) {
             throw new BadRequestException("the release of the film has an incorrect date");
         }
