@@ -33,18 +33,18 @@ public class UserDaoTest {
 
     @Test
     void getByIdTestShouldBeTrue() {
-        Assertions.assertEquals(userDao.createUser(user1).get(), user1);
+        Assertions.assertEquals(userDao.putToStorage(user1).get(), user1);
     }
 
     @Test
     void deleteUserByIdTestShouldBeTrue() {
         userDao.deleteUser(1);
-        Assertions.assertEquals(List.of(), userDao.getAll());
+        Assertions.assertEquals(List.of(), userDao.findAll());
     }
 
     @Test
     void updateUserTestShouldTrue() {
-        userDao.createUser(user1);
-        Assertions.assertEquals(userDao.updateUser(user2).get(), user2);
+        userDao.putToStorage(user1);
+        Assertions.assertEquals(userDao.updateInStorage(user2).get(), user2);
     }
 }

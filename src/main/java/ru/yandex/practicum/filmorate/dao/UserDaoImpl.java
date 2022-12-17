@@ -24,23 +24,23 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public Optional<User> getUser(int id) {
+    public Optional<User> findById(int id) {
         String sqlQuery = "SELECT * FROM USERS WHERE USER_ID = ?";
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id);
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToUser, id));
         } catch (DataAccessException exception) {
             return Optional.empty();
         }
     }
 
     @Override
-    public List<Optional<User>> getAll() {
+    public List<User> findAll() {
         String sqlQuery = "SELECT * FROM USERS";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
 
     @Override
-    public Optional<User> createUser(User user) {
+    public Optional<User> putToStorage(User user) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("user_id");
@@ -51,11 +51,11 @@ public class UserDaoImpl implements UserDao {
         userMap.put("birthday", user.getBirthday());
 
         int userId = simpleJdbcInsert.executeAndReturnKey(userMap).intValue();
-        return getUser(userId);
+        return findById(userId);
     }
 
     @Override
-    public Optional<User> updateUser(User user) {
+    public Optional<User> updateInStorage(User user) {
         String sqlQuery = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, NAME = ?, BIRTHDAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sqlQuery
                 , user.getEmail()
@@ -63,14 +63,13 @@ public class UserDaoImpl implements UserDao {
                 , user.getName()
                 , user.getBirthday()
                 , user.getId());
-        return getUser(user.getId());
+        return findById(user.getId());
     }
 
     @Override
-    public Optional<User> deleteUser(int id) {
+    public void deleteUser(int id) {
         String sqlQuery = "DELETE FROM USERS WHERE USER_ID = ?";
         jdbcTemplate.update(sqlQuery, id);
-        return Optional.empty();
     }
 
     @Override
@@ -90,7 +89,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<Optional<User>> getFriends(int id) {
+    public List<User> getFriends(int id) {
         String sqlQuery = "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.NAME, U.BIRTHDAY " +
                 "FROM FRIENDSHIP F, USERS U WHERE F.USER_ID = ? AND U.USER_ID = F.FRIEND_ID";
 
@@ -98,20 +97,20 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<Optional<User>> getMutualFriends(int id, int otherId) {
+    public List<User> getMutualFriends(int id, int otherId) {
         String sqlQuery = "SELECT U.USER_ID, U.EMAIL, U.LOGIN, U.NAME, U.BIRTHDAY " +
                 "FROM FRIENDSHIP AS F JOIN USERS AS U ON U.USER_ID = F.FRIEND_ID WHERE F.USER_ID = ? AND F.FRIEND_ID " +
                 "IN (SELECT FRIEND_ID FROM FRIENDSHIP WHERE USER_ID = ?)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
     }
 
-    private Optional<User> mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
-        return Optional.ofNullable(User.builder()
+    private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
+        return User.builder()
                 .id(resultSet.getInt("user_id"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
-                .build());
+                .build();
     }
 }

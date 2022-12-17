@@ -22,32 +22,32 @@ import java.util.stream.Collectors;
 @Component
 public class FilmDaoImpl implements FilmDao {
     private final JdbcTemplate jdbcTemplate;
-    private final DaoGenre daoGenre;
+    private final GenreDao genreDao;
 
     @Autowired
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate, DaoGenre daoGenre) {
+    public FilmDaoImpl(JdbcTemplate jdbcTemplate, GenreDao genreDao) {
         this.jdbcTemplate = jdbcTemplate;
-        this.daoGenre = daoGenre;
+        this.genreDao = genreDao;
     }
 
     @Override
-    public Optional<Film> getFilm(int id) {
+    public Optional<Film> findById(int id) {
         String sqlQuery = "SELECT * FROM FILM F, MPA M WHERE F.FILM_ID = ? AND F.MPA_ID = M.MPA_ID";
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id);
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToFilm, id));
         } catch (DataAccessException exception) {
             return Optional.empty();
         }
     }
 
     @Override
-    public List<Optional<Film>> getAll() {
+    public List<Film> findAll() {
         String sqlQuery = "SELECT * FROM FILM F, MPA M WHERE F.MPA_ID = M.MPA_ID";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
     @Override
-    public Optional<Film> createFilm(Film film) {
+    public Optional<Film> putToStorage(Film film) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("FILM")
                 .usingGeneratedKeyColumns("film_id");
@@ -60,11 +60,11 @@ public class FilmDaoImpl implements FilmDao {
 
         int filmId = simpleJdbcInsert.executeAndReturnKey(filmMap).intValue();
         updateFilmGenres(film.getGenres(), filmId);
-        return getFilm(filmId);
+        return findById(filmId);
     }
 
     @Override
-    public Optional<Film> updateFilm(Film film) {
+    public Optional<Film> updateInStorage(Film film) {
         String sqlQuery = "UPDATE FILM SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, DURATION = ?, MPA_ID = ?" +
                 " WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery,
@@ -76,7 +76,7 @@ public class FilmDaoImpl implements FilmDao {
                 film.getId());
         jdbcTemplate.update("DELETE FROM FILM_GENRES WHERE FILM_ID = ?", film.getId());
         updateFilmGenres(film.getGenres(), film.getId());
-        return getFilm(film.getId());
+        return findById(film.getId());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Optional<Film>> getMostPopularFilms(int limitSize) {
+    public List<Film> getMostPopularFilms(int limitSize) {
         String sqlQuery = "SELECT F.FILM_ID, F.NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, M.MPA_ID AS mpa_id, " +
                 "M.NAME AS mpa_name, G.GENRE_ID, G.NAME AS genre_name, " +
                 "COUNT(L.FILM_ID) AS likes " +
@@ -107,17 +107,17 @@ public class FilmDaoImpl implements FilmDao {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, Math.max(limitSize, 0));
     }
 
-    private Optional<Film> mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
-        return Optional.ofNullable(Film.builder()
+    private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
+        return Film.builder()
                 .id(resultSet.getInt("film_id"))
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
                 .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .mpa(new Mpa(resultSet.getInt("mpa.mpa_id"), resultSet.getString("mpa.name")))
-                .genres(daoGenre.getAllByIdFilm(resultSet.getInt("film_id"))
+                .genres(genreDao.getAllByIdFilm(resultSet.getInt("film_id"))
                         .stream().flatMap(Optional::stream).collect(Collectors.toList()))
-                .build());
+                .build();
     }
 
     private void updateFilmGenres(List<Genre> genres, int filmId) {

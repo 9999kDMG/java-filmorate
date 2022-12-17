@@ -6,17 +6,17 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmDao {
-    Optional<Film> getFilm(int id);
+    Optional<Film> findById(int id);
 
-    List<Optional<Film>> getAll();
+    List<Film> findAll();
 
-    Optional<Film> createFilm(Film film);
+    Optional<Film> putToStorage(Film film);
 
-    Optional<Film> updateFilm(Film film);
+    Optional<Film> updateInStorage(Film film);
 
     void addLike(int filmId, int userId);
 
     void deleteLike(int filmId, int userId);
 
-    List<Optional<Film>> getMostPopularFilms(int limitSize);
+    List<Film> getMostPopularFilms(int limitSize);
 }

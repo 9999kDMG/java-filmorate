@@ -6,21 +6,21 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserDao {
-    Optional<User> deleteUser(int id);
+    void deleteUser(int id);
 
-    Optional<User> getUser(int id);
+    Optional<User> findById(int id);
 
-    List<Optional<User>> getAll();
+    List<User> findAll();
 
-    Optional<User> createUser(User user);
+    Optional<User> putToStorage(User user);
 
-    Optional<User> updateUser(User user);
+    Optional<User> updateInStorage(User user);
 
     void addFriend(int id, int friendId);
 
     void deleteFriend(int id, int friendId);
 
-    List<Optional<User>> getFriends(int id);
+    List<User> getFriends(int id);
 
-    List<Optional<User>> getMutualFriends(int id, int otherId);
+    List<User> getMutualFriends(int id, int otherId);
 }

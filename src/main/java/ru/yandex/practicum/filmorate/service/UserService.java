@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -20,8 +18,7 @@ public class UserService {
     }
 
     public List<User> getAll() {
-        List<Optional<User>> optUser = userDao.getAll();
-        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
+        return userDao.findAll();
     }
 
     public User createUser(User user) {
@@ -32,17 +29,18 @@ public class UserService {
             newName = user.getName();
         }
         User newUser = user.withName(newName);
-        return userDao.createUser(newUser)
+        return userDao.putToStorage(newUser)
                 .orElseThrow(() -> new NotFoundException(String.format("user id%s", user.getId())));
     }
 
     public User updateUser(User user) {
-        return userDao.updateUser(user)
+        return userDao.updateInStorage(user)
                 .orElseThrow(() -> new NotFoundException(String.format("user id%s", user.getId())));
     }
 
     public User getUserById(int id) {
-        return userDao.getUser(id).orElseThrow(() -> new NotFoundException(String.format("user id%s", id)));
+        return userDao.findById(id)
+                .orElseThrow(() -> new NotFoundException(String.format("user id%s", id)));
     }
 
     public void addUserFriend(int id, int friendId) {
@@ -61,16 +59,14 @@ public class UserService {
 
     public List<User> getFriendsList(int id) {
         getUserById(id);
-        List<Optional<User>> optUser = userDao.getFriends(id);
-        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
+        return userDao.getFriends(id);
     }
 
     public List<User> getMutualFriends(int id, int otherId) {
         getUserById(id);
         getUserById(otherId);
 
-        List<Optional<User>> optUser = userDao.getMutualFriends(id, otherId);
-        return optUser.stream().flatMap(Optional::stream).collect(Collectors.toList());
+        return userDao.getMutualFriends(id, otherId);
     }
 
     public void deleteUser(int id) {

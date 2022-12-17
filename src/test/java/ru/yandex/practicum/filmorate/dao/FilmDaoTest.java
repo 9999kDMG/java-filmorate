@@ -40,12 +40,12 @@ public class FilmDaoTest {
 
     @Test
     void getByIdTestShouldBeTrue() {
-        Assertions.assertEquals(filmDao.createFilm(film1).get(), film1);
+        Assertions.assertEquals(filmDao.putToStorage(film1).get(), film1);
     }
 
     @Test
     void updateFilmTestShouldTrue() {
-        filmDao.createFilm(film1);
-        Assertions.assertEquals(filmDao.updateFilm(film2).get(), film2);
+        filmDao.putToStorage(film1);
+        Assertions.assertEquals(filmDao.updateInStorage(film2).get(), film2);
     }
 }

@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class DaoGenreImpl implements DaoGenre {
+public class GenreDaoImpl implements GenreDao {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public DaoGenreImpl(JdbcTemplate jdbcTemplate) {
+    public GenreDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
